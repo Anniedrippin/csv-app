@@ -40,3 +40,17 @@ A Laravel-based web application that enables CSV upload, dynamic editing (rows &
    ```bash
    git clone https://github.com/Anniedrippin/csv-app.git
    cd csv-app
+2. Install dependencies:
+    ```bash
+   composer install
+   npm install && npm run dev
+3. Set up your .env file:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+4. Configure DB and run migrations:
+   ```bash
+   php artisan migrate
+5. Run the development server:
+   ```bash
+   php artisan serve
