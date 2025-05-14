@@ -19,8 +19,72 @@
                             {{ basename($file->filename) }}
                         </a>
 
-                       {{-- Marketplace Dropdown --}}
-@if (!empty($subfiles))
+                       {{-- Marketplace --}}
+                       @if (!empty($subfiles))
+                            <div class="ms-3 mt-1">
+                                <div class="text-start">
+                                            Marketplace
+                                </div>
+                                @foreach ($subfiles as $subfileType => $columns)
+    <div class="d-flex justify-content-between align-items-center mb-1">
+        <a href="{{ route('csv.show', ['id' => $file->id, 'type' => $subfileType]) }}" class="text-decoration-none">
+            ▸ {{ ucfirst($subfileType) }} View
+        </a>
+
+        @if(auth()->user()->hasRole('admin'))
+            <div class="btn-group ms-2">
+                {{-- Edit Button --}}
+                <a href="{{ route('csv.edit-type', ['id' => $file->id, 'type' => $subfileType]) }}"
+                   class="btn btn-sm btn-outline-primary"
+                   title="Edit {{ ucfirst($subfileType) }}">
+                    ✏️
+                </a>
+
+                {{-- Delete Button --}}
+                <form action="{{ route('csv.destroy-subfile', ['id' => $file->id, 'type' => $subfileType]) }}"
+                      method="POST"
+                      onsubmit="return confirm('Delete the {{ $subfileType }} subfile?');"
+                      style="display:inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete {{ ucfirst($subfileType) }}">
+                        🗑️
+                    </button>
+                </form>
+            </div>
+        @endif
+    </div>
+@endforeach
+
+                                <!-- @foreach ($subfiles as $subfileType => $columns)
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <a href="{{ route('csv.show', ['id' => $file->id, 'type' => $subfileType]) }}" class="text-decoration-none">
+                                            ▸ {{ ucfirst($subfileType) }} View
+                                        </a>
+
+                                        @if(auth()->user()->hasRole('admin'))
+                                            <form action="{{ route('csv.destroy-subfile', ['id' => $file->id, 'type' => $subfileType]) }}" method="POST" onsubmit="return confirm('Delete the {{ $subfileType }} subfile?');" style="display:inline;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger ms-2" style="padding: 0.1rem 0.4rem;" title="Delete {{ ucfirst($subfileType) }}">
+                                                    🗑️
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                @endforeach -->
+
+                                <!-- @foreach ($subfiles as $subfileType => $columns)
+                                    <a href="{{ route('csv.show', ['id' => $file->id, 'type' => $subfileType]) }}" class="d-block text-decoration-none mb-1">
+                                        ▸ {{ ucfirst($subfileType) }} View
+                                    </a>
+                                @endforeach -->
+                            </div>
+                        @endif
+
+
+
+<!-- @if (!empty($subfiles))
     <div class="dropdown ms-3 mt-1">
         <button class="btn btn-sm btn-outline-primary dropdown-toggle w-100 text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             Marketplace
@@ -35,7 +99,7 @@
             @endforeach
         </ul>
     </div>
-@endif
+@endif -->
 
 {{-- Create Marketplace --}}
 <div class="mt-2 text-center">

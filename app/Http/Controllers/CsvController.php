@@ -147,7 +147,10 @@ class CsvController extends Controller
 
     $this->generateSubFiles($mainPath, $baseName);
 
-    return redirect()->route('csv.index')->with('success', 'CSV updated and synced successfully.');
+    return redirect()->route('csv.show', ['id' => $csvFile->id])
+    ->with('success', 'CSV updated and synced successfully.');
+
+    // return redirect()->route('csv.show')->with('success', 'CSV updated and synced successfully.');
 
 }
 
@@ -388,6 +391,80 @@ public function listMarketplaces($csvFileId)
 
     return view('csv.marketplaces', compact('csvFile', 'marketplaces'));
 }
+public function saveTypeColumns(Request $request)
+{
+    $request->validate([
+        'file_id' => 'required|exists:csv_files,id',
+        'type' => 'required|string',
+        'columns' => 'nullable|array'
+    ]);
+
+    $file = CsvFile::findOrFail($request->file_id);
+    $type = $request->type;
+    $columns = $request->input('columns', []);
+
+    // Update CsvType model
+    $csvType = CsvType::where('csv_file_id', $file->id)
+        ->where('type_name', strtolower($type))
+        ->firstOrFail();
+
+    $csvType->columns = $columns;
+    $csvType->save();
+
+    // Regenerate subfiles
+    $base = pathinfo($file->filename, PATHINFO_FILENAME);
+    $this->generateSubFiles(storage_path("app/public/csvs/" . basename($file->filename)), $base);
+
+    return redirect()->route('csv.show', ['id' => $file->id, 'type' => $type])
+        ->with('success', 'Marketplace columns updated.');
+}
+
+
+public function destroySubfile($id, $type)
+{
+    $csvFile = CsvFile::findOrFail($id);
+    $baseName = pathinfo($csvFile->filename, PATHINFO_FILENAME);
+    $filePath = storage_path("app/public/csvs/{$baseName}_{$type}.csv");
+
+    // Delete the file if it exists
+    if (file_exists($filePath)) {
+        unlink($filePath);
+    }
+
+    // Delete CsvType row associated with this subfile
+    CsvType::where('csv_file_id', $csvFile->id)
+        ->where('type_name', strtolower($type))
+        ->delete();
+
+    // Update subfile_columns column
+    $subfiles = json_decode($csvFile->subfile_columns, true) ?? [];
+    unset($subfiles[$type]);
+    $csvFile->subfile_columns = json_encode($subfiles);
+    $csvFile->save();
+
+    return back()->with('success', ucfirst($type) . ' subfile deleted successfully.');
+}
+public function editTypeForm($id, $type)
+{
+    $csvFile = CsvFile::findOrFail($id);
+    $type = strtolower($type);
+    $csvType = CsvType::where('csv_file_id', $id)
+        ->where('type_name', $type)
+        ->firstOrFail();
+
+    $path = storage_path('app/public/csvs/' . basename($csvFile->filename));
+    if (!file_exists($path)) {
+        abort(404, 'CSV file not found.');
+    }
+
+    $data = array_map('str_getcsv', file($path));
+    $headers = array_shift($data);
+    $selectedColumns = is_array($csvType->columns) ? $csvType->columns : json_decode($csvType->columns, true);
+
+    return view('csv.edit-type', compact('csvFile', 'csvType', 'headers', 'selectedColumns'));
+}
+
+
 
 
 

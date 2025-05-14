@@ -8,9 +8,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/csv/{id}', [CsvController::class, 'show'])->name('csv.show');
  
 
-     Route::get('/csv/{id}/create-type', [CsvController::class, 'createTypeForm'])->name('csv.create-type');
+    Route::get('/csv/{id}/create-type', [CsvController::class, 'createTypeForm'])->name('csv.create-type');
     Route::post('/csv/store-type', [CsvController::class, 'storeType'])->name('csv.store-type');
     Route::get('/csv/{csvFileId}/marketplaces', [CsvController::class, 'listMarketplaces'])->name('csv.marketplaces');
+    Route::post('/csv/save-type-columns', [CsvController::class, 'saveTypeColumns'])->name('csv.save-type-columns');
+    Route::delete('/csv/{id}/subfile/{type}', [CsvController::class, 'destroySubfile'])->name('csv.destroy-subfile');
+    Route::get('/csv/{id}/type/{type}/edit', [CsvController::class, 'editTypeForm'])->name('csv.edit-type');
 
 
 

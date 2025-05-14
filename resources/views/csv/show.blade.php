@@ -8,8 +8,15 @@
         @endif
     </h2>
 
-    <div class="mb-3">
+    <div class="mb-3 d-flex justify-content-between">
         <a href="{{ route('csv.index') }}" class="btn btn-primary">Back</a>
+
+        {{-- Show Add Product button only if no type is selected --}}
+        @if(auth()->user()->hasRole('admin') && empty($type))
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                + Add Product
+            </button>
+        @endif
     </div>
 
     {{-- 🔍 Search Feature --}}
@@ -99,6 +106,40 @@
         </div>
     @endif
 
+    {{-- ✅ Add Product Modal (only render if type is empty) --}}
+    @if(auth()->user()->hasRole('admin') && empty($type))
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form method="POST" action="{{ route('csv.save') }}">
+                @csrf
+                <input type="hidden" name="file_id" value="{{ $csvFile->id }}">
+                <input type="hidden" name="type" value="{{ $type ?? '' }}">
+                <input type="hidden" name="row_indexes[]" value="-1"> <!-- Mark as new row -->
+
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addProductModalLabel">Add Product</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        @foreach ($headers as $header)
+                            <div class="mb-3">
+                                <label class="form-label">{{ $header }}</label>
+                                <input type="hidden" name="headers[]" value="{{ $header }}">
+                                <input type="text" name="rows_flat[]" class="form-control" placeholder="Enter {{ $header }}">
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Add Product</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
     {{-- 🔧 JS for Column & Row Management --}}
     <script>
         function addColumn() {
@@ -118,10 +159,8 @@
         function addRow() {
             const tbody = document.getElementById('csv-body');
             const colCount = document.querySelectorAll("thead tr th").length;
-            const rowCount = tbody.querySelectorAll("tr").length;
             const newRow = document.createElement('tr');
 
-            // Add hidden input for row index = -1 (new row)
             newRow.innerHTML += `<input type="hidden" name="row_indexes[]" value="-1">`;
 
             for (let i = 0; i < colCount; i++) {

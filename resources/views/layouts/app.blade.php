@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CSV Manager</title>
+    <title>Listing Manager</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- ✅ Bootstrap CSS -->
@@ -28,7 +28,7 @@
         <div class="text-center mb-4">
             <h2 class="fw-bold text-primary">{{ config('app.name', 'CSV Manager') }}</h2>
         </div>
-        @auth
+        <!-- @auth
             <div class="mb-3">
                 <p>Logged in as <strong>{{ auth()->user()->name }}</strong> |
                     <a href="{{ route('logout') }}" 
@@ -40,7 +40,24 @@
                     @csrf
                 </form>
             </div>
+        @endauth -->
+        @auth
+            <div class="d-flex justify-content-end mb-3">
+                <div>
+                    <p class="mb-0">
+                        Logged in as <strong>{{ auth()->user()->name }}</strong> |
+                        <a href="{{ route('logout') }}"
+                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            Logout
+                        </a>
+                    </p>
+                    <form id="logout-form" method="POST" action="{{ route('logout') }}" style="display: none;">
+                        @csrf
+                    </form>
+                </div>
+            </div>
         @endauth
+
 
         @if(session('success') || $errors->any())
             @php
